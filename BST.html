@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>BST</title>
+  </head>
+  <body>
+    <script>
+    class Node {
+      constructor(data, leftNode, rightNode) {
+        this.data = data
+        this.leftNode = leftNode
+        this.rightNode = rightNode
+      }
+      print () {
+        return this.data
+      }
+    }
+
+    var levelOrderTraversal = function(node) {
+      if(!node) {
+        throw new Error('Empty Tree')
+      }
+
+      var que = new Queue()
+      que.enqueue(node)
+      while(!que.isEmpty()) {
+        console.log(que)
+        node = que.dequeue()
+        console.log(node.data)
+        if(node.leftNode) que.enqueue(node.leftNode)
+        if(node.rightNode) que.enqueue(node.rightNode)
+      }
+    }
+
+    class Stack {
+      constructor() {
+        this.arr = []
+      }
+      pop () {
+        return this.arr.shift()
+      }
+      push (data) {
+        this.arr.unshift(data)
+      }
+      isEmpty () {
+        return this.arr.length == 0
+      }
+    }
+
+    class Queue {
+      constructor () {
+        this.arr = []
+      }
+      enqueue (data) {
+        return this.arr.push(data)
+      }
+      dequeue () {
+        return this.arr.shift()
+      }
+      isEmpty () {
+        return this.arr.length == 0
+      }
+    }
+
+    class BST {
+      constructor() {
+        this.root = null
+      }
+      insert (data) {
+        if (this.find(data)) {
+          return
+        }
+
+        var node = new Node(data, null, null)
+        if (this.root == null) {
+          this.root = node
+        } else {
+          var currentNode = this.root
+          var parentNode
+          while (currentNode) {
+            parentNode = currentNode
+            if (data < currentNode.data) {
+              currentNode = currentNode.leftNode
+              if (currentNode == null) {
+                parentNode.leftNode = node
+                break
+              }
+            } else {
+              currentNode = currentNode.rightNode
+              if (currentNode == null) {
+                parentNode.rightNode = node
+                break
+              }
+            }
+          }
+        }
+      }
+      preOrder () {
+        preOrderFn(this.root)
+      }
+      inOrder () {
+        inOrderFn(this.root)
+      }
+      postOrder () {
+        postOrderFn(this.root)
+      }
+      find (data) {
+        var currentNode = this.root
+        while (currentNode) {
+          if (currentNode.data == data) {
+            return currentNode
+          } else if (currentNode.data > data) {
+            currentNode = currentNode.leftNode
+          } else {
+            currentNode = currentNode.rightNode
+          }
+        }
+        return null
+      }
+      getMax () {
+        var currentNode = this.root
+        while (currentNode.rightNode) {
+          currentNode = currentNode.rightNode
+        }
+        return currentNode.data
+      }
+      getMin () {
+        var currentNode = this.root
+        while (currentNode.leftNode) {
+          currentNode = currentNode.leftNode
+        }
+        return currentNode.data
+      }
+      deleteNode (data) {
+        /********************** 初始化 **************************/
+        var delNode = this.root,
+            delNodeParent = null
+        /************ 从根节点查找关键字为data的节点 ***************/
+        while (delNode) {
+          if (delNode.data == data) break
+          delNodeParent = delNode // 记录被删节点的双亲节点
+          if (delNode.data > data) delNode = delNode.leftNode // 在被删节点左子树中继续查找
+          else delNode = delNode.rightNode  // 在被删节点的右子树中继续查找
+        }
+        if (!delNode) { // 没找到
+          return
+        }
+        /**
+         * 三种情况
+         * 1.被删节点既有左子树，又有右子树
+         * 2.被删节点只有右子树
+         * 3.被删节点只有左子树
+        **/
+        var leftBigNodeParent = delNode
+        if (delNode.leftNode && delNode.rightNode) { // 被删节点左右子树都存在
+          var leftBigNode = delNode.leftNode
+          while (leftBigNode.rightNode) { // 在被删节点的左子树中寻找其前驱节点，即最右下角的节点，也就是左子树中数值最大的节点
+            leftBigNodeParent = leftBigNode
+            leftBigNode = leftBigNode.rightNode // 走到右尽头
+          }
+          delNode.data = leftBigNode.data // 令被删节点的前驱替代被删节点
+          if (leftBigNodeParent.data != delNode.data) {
+            leftBigNodeParent.rightNode = leftBigNode.leftNode // 重接被删节点的前驱的父节点的右子树
+          } else {
+            leftBigNodeParent.leftNode = leftBigNode.leftNode // 重接被删节点的前驱的父节点的左子树
+          }
+        } else if (!delNode.leftNode) {
+          delNode = delNode.rightNode // 若被删节点没有左子树，只需重接其右子树
+        } else if (!delNode.rightNode) {
+          delNode = delNode.leftNode // 若被删节点没有右子树，只需重接其左子树
+        }
+        /********* 将被删节点的子树挂接到其父节点的相应位置 **********/
+        if (!delNodeParent) {
+          this.root = delNode // 若被删节点是根节点
+        } else if (leftBigNodeParent.data == delNodeParent.data) {
+          delNodeParent.leftNode = delNode // 挂接到父节点的左子树位置
+        } else {
+          delNodeParent.rightNode = delNode // 挂接到父节点的右子树位置
+        }
+      }
+      depth () {
+        return depthFn(this.root)
+      }
+      nodeCount () {
+        return nodeCount(this.root)
+      }
+    }
+
+    function preOrderFn (node) {
+      if (node) {
+        console.log(node.print())
+        preOrderFn(node.leftNode)
+        preOrderFn(node.rightNode)
+      }
+    }
+    function inOrderFn (node) {
+      if (node) {
+        inOrderFn(node.leftNode)
+        console.log(node.print())
+        inOrderFn(node.rightNode)
+      }
+    }
+    function postOrderFn (node) {
+      if (node) {
+        postOrderFn (node.leftNode)
+        postOrderFn (node.rightNode)
+        console.log(node.print())
+      }
+    }
+    function inOrderWithoutRecursion (root) {
+      if (!root)
+        return
+
+      var parentNode = root
+      var stack = new Stack()
+
+      while (parentNode || !stack.isEmpty()) {
+
+        // 一直遍历到左子树的最下面，将一路遍历过的节点push进栈中
+        if (parentNode) {
+          stack.push(parentNode)
+          parentNode = parentNode.leftNode
+        }
+        // 当parentNode为空时，说明已经达到了左子树的最下面，可以出栈操作了
+        else {
+          parentNode = stack.pop()
+          console.log(parentNode.data)
+          // 进入右子树，开始新一轮循环
+          parentNode = parentNode.rightNode
+        }
+      }
+    }
+    function PreOrderWithoutRecursion (root) {
+      if (!root)
+        return
+
+      var parentNode = root
+      var stack = new Stack()
+
+      while (parentNode || !stack.isEmpty()) {
+
+        // 一直遍历到左子树的最下面，一边打印data,将一路遍历过的节点push进栈中
+        if (parentNode) {
+          console.log(parentNode.data)
+          stack.push(parentNode)
+          parentNode = parentNode.leftNode
+        }
+        // 当parentNode为空时，说明已经达到了左子树的最下面，可以出栈操作了
+        else {
+          parentNode = stack.pop()
+          // 进入右子树，开始新一轮循环
+          parentNode = parentNode.rightNode
+        }
+      }
+    }
+    function PostOrderWithoutRecursion (root) {
+      if (!root)
+        return
+
+      var parentNode = root
+      var stack = new Stack()
+      var lastVisitNode = null
+
+      while (parentNode || !stack.isEmpty()) {
+        if (parentNode) {
+          stack.push(parentNode)
+          parentNode = parentNode.leftNode
+        }
+        else {
+          parentNode = stack.pop()
+          // 如果当前节点没有右节点或者是右节点被访问过，则访问当前节点
+          if (!parentNode.rightNode || parentNode.rightNode.data == lastVisitNode.data) {
+            console.log(parentNode.data)
+            lastVisitNode = parentNode
+          }
+          // 访问右节点
+          else {
+            stack.push(parentNode)
+            parentNode = parentNode.rightNode
+            while (parentNode) {
+              parentNode = parentNode.leftNode
+            }
+          }
+        }
+      }
+    }
+    function depthFn (node) {
+      if (!node) {
+        return 0
+      } else {
+        var leftDepth = depthFn(node.leftNode)
+        var rightDepth = depthFn(node.rightNode)
+        if (leftDepth > rightDepth)
+          return (leftDepth + 1)
+        else
+          return (rightDepth + 1)
+      }
+    }
+    function nodeCount(node) {
+      if (!node) {
+        return 0
+      } else {
+        return nodeCount(node.leftNode) + nodeCount(node.rightNode) + 1
+      }
+    }
+
+
+
+
+    var tree = new BST()
+    tree.insert(1)
+    tree.insert(2)
+    tree.insert(5)
+    tree.insert(3)
+    tree.insert(4)
+    tree.insert(9)
+    tree.insert(0)
+    tree.insert(12)
+    </script>
+  </body>
+</html>
